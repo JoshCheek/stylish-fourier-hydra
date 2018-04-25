@@ -13,22 +13,46 @@ class ShowFourier < Graphics::Simulation
   end
 
   def draw(iteration)
-    iteration = 1 + (iteration / 4)
+    iteration = 1 + (iteration / 20)
+
     clear :black
     n = @frequencies.length
 
-    draw_points \
-      2000.times.map { |k|
-        real = imaginary = 0
-        @frequencies.each_with_index do |(f_real, f_imaginary), u|
-          p = 2*PI*u*k/2000*iteration.pred/n
-          c, s = cos(p), sin(p)
-          real      += c*f_real      + s*f_imaginary
-          imaginary += c*f_imaginary - s*f_real
-        end
-        [real, imaginary]
-      },
-      :red
+    mag_and_angle = @frequencies.each_with_index.flat_map { |(f_real, f_imaginary), u|
+      p = 2*PI * u * iteration.pred/n
+      [ [f_real,       p],
+        [-f_imaginary, p + PI/2],
+      ]
+    }
+
+    sum_x = sum_y = 0
+
+    pts = mag_and_angle.map.with_index do |(mag, angle), i|
+      sum_x += mag*cos(angle)
+      sum_y -= mag*sin(angle)
+      center_circle sum_x, sum_y, mag, :white if 1 < i
+      [sum_x, sum_y]
+    end
+    last_x, last_y = pts.last
+    # center_circle *pts[-1], mag_and_angle[-1][0].abs, :yellow
+
+    center_line last_x, -h, last_x, 2*h, :red, true
+    center_line -w, last_y, 2*w, last_y, :red, true
+    draw_points pts.drop(1), :green, true
+
+    # # increased sample rate
+    # draw_points \
+    #   2000.times.map { |k|
+    #     real = imaginary = 0
+    #     @frequencies.each_with_index do |(f_real, f_imaginary), u|
+    #       p = 2*PI*u*k/2000*iteration.pred/n
+    #       c, s = cos(p), sin(p)
+    #       real      += c*f_real      + s*f_imaginary
+    #       imaginary += c*f_imaginary - s*f_real
+    #     end
+    #     [real, imaginary]
+    #   },
+    #   :red
 
     draw_points \
       iteration.times.map { |k|
@@ -43,37 +67,29 @@ class ShowFourier < Graphics::Simulation
       },
       :white,
       true
-
-    # @real_x_off = 0
-    # @real_y_off = 0
-    # real_x = 0
-    # real_y = 0
-    # @frequencies.each_with_index do |(f_real, f_imaginary), u|
-    #   p = 2*PI*u*iteration/n
-    #   r = Math.sqrt(cos(p)**2 + sin(p)**2)
-    #   next_real_x = real_x + cos(p)*f_real + sin(p)*f_imaginary
-    #   next_real_y = u * 10
-    #   line @real_x_off + real_x,      @real_y_off + real_y,
-    #        @real_x_off + next_real_x, @real_y_off + next_real_y,
-    #        :red
-    #   real_x = next_real_x
-    #   real_y = next_real_y
-    # end
   end
 
   def draw_points(points, colour, thick = false)
     points.each_cons(2) do |p1, p2|
-      line *p1, *p2, colour, thick
+      center_line *p1, *p2, colour, thick
     end
   end
 
-  def line(x1, y1, x2, y2, colour, thick)
-    super x1, y1, x2, y2, colour
+  def center_circle(x, y, r, colour)
+    circle x+w/2, y+h/2, r, colour
+  end
+
+  def center_line(x1, y1, x2, y2, colour, thick=false)
+    x1 += w/2
+    x2 += w/2
+    y1 += h/2
+    y2 += h/2
+    line x1, y1, x2, y2, colour
     if thick
-      super x1+1, y1, x2+1, y2, colour
-      super x1-1, y1, x2-1, y2, colour
-      super x1, y1+1, x2, y2+1, colour
-      super x1, y1-1, x2, y2-1, colour
+      line x1+1, y1, x2+1, y2, colour
+      line x1-1, y1, x2-1, y2, colour
+      line x1, y1+1, x2, y2+1, colour
+      line x1, y1-1, x2, y2-1, colour
     end
   end
 end
@@ -91,10 +107,9 @@ points.push points[0]
 xmin, xmax = points.map(&:first).minmax
 ymin, ymax = points.map(&:last).minmax
 points = points.map do |x, y|
-  [ (xmax - xmin) / 2 + x - xmin,
-    (ymax - ymin) / 2 + y - ymin,
+  [ (xmax - xmin) / 2 + x - xmin - w/2,
+    (ymax - ymin) / 2 + y - ymin - h/2,
   ]
-  # [x - xmin + 10, y - ymin + 10]
 end
 
 # Draw it
