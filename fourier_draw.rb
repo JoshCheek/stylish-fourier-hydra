@@ -18,41 +18,26 @@ class ShowFourier < Graphics::Simulation
     clear :black
     n = @frequencies.length
 
-    mag_and_angle = @frequencies.each_with_index.flat_map { |(f_real, f_imaginary), u|
+    mag_and_angle = @frequencies.each_with_index.map { |(f_real, f_imag), u|
       p = 2*PI * u * iteration.pred/n
-      [ [f_real,       p],
-        [-f_imaginary, p + PI/2],
-      ]
+      [f_real, f_imag, p]
     }
 
     sum_x = sum_y = 0
 
-    pts = mag_and_angle.map.with_index do |(mag, angle), i|
-      sum_x += mag*cos(angle)
-      sum_y -= mag*sin(angle)
-      center_circle sum_x, sum_y, mag, :white if 1 < i
+    pts = mag_and_angle.map do |r, i, ø|
+      c, s = cos(ø), sin(ø)
+      sum_x += c*r + s*i
+      sum_y += c*i - s*r
+      mag = sqrt(r*r + i*i)
+      center_circle sum_x, sum_y, mag, :white
       [sum_x, sum_y]
     end
     last_x, last_y = pts.last
-    # center_circle *pts[-1], mag_and_angle[-1][0].abs, :yellow
 
     center_line last_x, -h, last_x, 2*h, :red, true
     center_line -w, last_y, 2*w, last_y, :red, true
-    draw_points pts.drop(1), :green, true
-
-    # # increased sample rate
-    # draw_points \
-    #   2000.times.map { |k|
-    #     real = imaginary = 0
-    #     @frequencies.each_with_index do |(f_real, f_imaginary), u|
-    #       p = 2*PI*u*k/2000*iteration.pred/n
-    #       c, s = cos(p), sin(p)
-    #       real      += c*f_real      + s*f_imaginary
-    #       imaginary += c*f_imaginary - s*f_real
-    #     end
-    #     [real, imaginary]
-    #   },
-    #   :red
+    draw_points pts, :green
 
     draw_points \
       iteration.times.map { |k|
@@ -65,7 +50,7 @@ class ShowFourier < Graphics::Simulation
         end
         [real, imaginary]
       },
-      :white,
+      :blue,
       true
   end
 
