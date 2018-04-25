@@ -13,15 +13,14 @@ class ShowFourier < Graphics::Simulation
   end
 
   def draw(iteration)
-    iteration = 1 + (iteration / 20)
-
     clear :black
     n = @frequencies.length
+    iteration = 1 + (iteration / 20)
 
-    mag_and_angle = @frequencies.each_with_index.map { |(f_real, f_imag), u|
+    mag_and_angle = @frequencies.each_with_index.map do |(f_real, f_imag), u|
       p = 2*PI * u * iteration.pred/n
       [f_real, f_imag, p]
-    }
+    end
 
     sum_x = sum_y = 0
 
@@ -33,12 +32,15 @@ class ShowFourier < Graphics::Simulation
       center_circle sum_x, sum_y, mag, :white
       [sum_x, sum_y]
     end
+
     last_x, last_y = pts.last
+    draw_points pts, :green, true
 
-    center_line last_x, -h, last_x, 2*h, :red, true
-    center_line -w, last_y, 2*w, last_y, :red, true
-    draw_points pts, :green
+    # crosshairs
+    # center_line last_x, -h, last_x, 2*h, :red, true
+    # center_line -w, last_y, 2*w, last_y, :red, true
 
+    # the drawing up to this point
     draw_points \
       iteration.times.map { |k|
         real = imaginary = 0
@@ -50,7 +52,7 @@ class ShowFourier < Graphics::Simulation
         end
         [real, imaginary]
       },
-      :blue,
+      :magenta,
       true
   end
 
