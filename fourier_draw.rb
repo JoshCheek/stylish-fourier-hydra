@@ -37,8 +37,8 @@ class ShowFourier < Graphics::Simulation
     draw_points pts, :green, true
 
     # crosshairs
-    # center_line last_x, -h, last_x, 2*h, :red, true
-    # center_line -w, last_y, 2*w, last_y, :red, true
+    center_line last_x, -h, last_x, 2*h, :red, true
+    center_line -w, last_y, 2*w, last_y, :red, true
 
     # the drawing up to this point
     draw_points \
@@ -84,7 +84,7 @@ end
 w, h = 800, 600
 
 # note: https://www.mobilefish.com/services/record_mouse_coordinates/record_mouse_coordinates.php
-points = %w[193,47 140,204 123,193 99,189 74,196 58,213 49,237 52,261 65,279 86,292 113,295 135,282 152,258 201,95 212,127 218,150 213,168 201,185 192,200 203,214 219,205 233,191 242,170 244,149 242,131 233,111]
+points = %w[193,47 166,125 140,204 123,193 99,189 74,196 58,213 49,237 52,261 65,279 86,292 113,295 135,282 152,258 201,95 212,127 218,150 213,168 201,185 192,200 203,214 219,205 233,191 242,170 244,149 242,131 233,111]
            .map { |n|
              x, y = n.split(?,).map(&:to_i)
              [x*2, h-y]
