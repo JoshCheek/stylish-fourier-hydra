@@ -62,7 +62,7 @@ functions = center(
     -> t { [cos(PI*t)            , sin(PI*t)        + 1] }, # top
     -> t { [cos(PI*t+PI/2)   - 1 , sin(PI*t+PI/2)      ] }, # left
     -> t { [cos(PI+PI*t)         , sin(PI+PI*t)     - 1] }, # bottom
-    -> t { [cos(PI*t+PI*3/2) + 1 , sin(PI*t+PI*3/2)    ] }, # left
+    -> t { [cos(PI*t+PI*3/2) + 1 , sin(PI*t+PI*3/2)    ] }, # right
   ],
 )
 

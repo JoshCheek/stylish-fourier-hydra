@@ -91,6 +91,8 @@ w, h = 800, 600
 # note: https://www.mobilefish.com/services/record_mouse_coordinates/record_mouse_coordinates.php
 points = %w[193,47 166,125 140,204 123,193 99,189 74,196 58,213 49,237 52,261 65,279 86,292 113,295 135,282 152,258 201,95 212,127 218,150 213,168 201,185 192,200 203,214 219,205 233,191 242,170 244,149 242,131 233,111]
            .map { |n|
+             # uhhhhh this is fkn dumb -.^ the drawing thing should either
+             # not mess w/ coords, or should get them correct
              x, y = n.split(?,).map(&:to_i)
              [x*2, h-y]
            }
