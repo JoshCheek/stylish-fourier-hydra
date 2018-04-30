@@ -6,59 +6,64 @@ class ShowFourier < Graphics::Simulation
 
   def initialize(points, width, height, num_colours)
     super width, height, num_colours
-    @real_y_off = (points.map(&:last).max + height) / 2.0
-    @real_x_off = points.map(&:first).minmax.tap { |min, max| break (min + max) / 2.0 }
     @frequencies = Fourier.to(points)
-    @progress = 0
+    @progress = []
+    @x_off = w/2
+    @y_off = h/2
   end
 
   def draw(iteration)
     clear :black
     n = @frequencies.length
-    iteration = 1 + (iteration / 20)
+    iteration = 1 + (iteration / 10)
 
+    # the machine to draw it all
+    two_pi = 2*PI
+    p_no_u = two_pi*iteration.pred/n
     mag_and_angle = @frequencies.each_with_index.map do |(f_real, f_imag), u|
-      p = 2*PI * u * iteration.pred/n
-      [f_real, f_imag, p]
+      [f_real, f_imag, p_no_u*u]
     end
 
     sum_x = sum_y = 0
 
-    pts = mag_and_angle.map do |r, i, ø|
+    pts = []
+    mag_and_angle.each do |r, i, ø|
       c, s = cos(ø), sin(ø)
       sum_x += c*r + s*i
       sum_y += c*i - s*r
       mag = sqrt(r*r + i*i)
-      center_circle sum_x, sum_y, mag, :white
-      [sum_x, sum_y]
+
+      # omit spammy results
+      if 2 <= mag
+        center_circle sum_x, sum_y, mag, :white unless mag < 2
+        pts << sum_x << sum_y
+      end
     end
 
-    last_x, last_y = pts.last
-    draw_points pts, :green, true
+    last_x, last_y = pts.last(2)
+    draw_points pts, :green#, true
 
     # crosshairs
-    center_line last_x, -h, last_x, 2*h, :red, true
-    center_line -w, last_y, 2*w, last_y, :red, true
+    center_line last_x, -h, last_x, 2*h, :red# , true
+    center_line -w, last_y, 2*w, last_y, :red# , true
 
     # the drawing up to this point
-    draw_points \
-      iteration.times.map { |k|
-        real = imaginary = 0
-        @frequencies.each_with_index do |(f_real, f_imaginary), u|
-          p = 2*PI*u*k/n
-          c, s = cos(p), sin(p)
-          real      += c*f_real      + s*f_imaginary
-          imaginary += c*f_imaginary - s*f_real
-        end
-        [real, imaginary]
-      },
-      :magenta,
-      true
+    p_no_u = two_pi*iteration.pred/n
+    real = imaginary = 0
+    @frequencies.each_with_index do |(f_real, f_imaginary), u|
+      p = p_no_u*u
+      c, s = cos(p), sin(p)
+      real      += c*f_real      + s*f_imaginary
+      imaginary += c*f_imaginary - s*f_real
+    end
+    @progress << real << imaginary
+
+    draw_points @progress, :magenta, true
   end
 
   def draw_points(points, colour, thick = false)
-    points.each_cons(2) do |p1, p2|
-      center_line *p1, *p2, colour, thick
+    0.step by: 2, to: points.length-3 do |i|
+      center_line points[i+0], points[i+1], points[i+2], points[i+3], colour, thick
     end
   end
 
@@ -67,10 +72,10 @@ class ShowFourier < Graphics::Simulation
   end
 
   def center_line(x1, y1, x2, y2, colour, thick=false)
-    x1 += w/2
-    x2 += w/2
-    y1 += h/2
-    y2 += h/2
+    x1 += @x_off
+    x2 += @x_off
+    y1 += @y_off
+    y2 += @y_off
     line x1, y1, x2, y2, colour
     if thick
       line x1+1, y1, x2+1, y2, colour
