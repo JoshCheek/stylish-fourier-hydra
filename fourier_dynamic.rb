@@ -16,6 +16,7 @@ class DrawFourier < Graphics::Simulation
       if clicked
         @frequencies = Fourier.to(@points)
         @state = [:transform, iteration]
+        at_exit { p @points }
       else
         point = [x, y]
         @points << point unless point == @points.last
