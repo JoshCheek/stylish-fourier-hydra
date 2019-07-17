@@ -3,7 +3,7 @@ Drawing with epicycles
 
 Video can be viewed [here](https://vimeo.com/347925024).
 
-1. First create an SVG, eg, [hydra.svg](./hydra.svg).
+1. First create an SVG, eg, [hydra.svg](./hydra.svg) (traced from [this](https://publicdomainvectors.org/en/free-clipart/Hydra-dragon-vector-silhouette/75432.html) image)
 2. Generate the HTML file used to extract the points from the SVG path:
 
    ```
@@ -22,3 +22,4 @@ Video can be viewed [here](https://vimeo.com/347925024).
    ruby -s draw.rb -crosshairs
    ruby -s draw.rb -zoom=5 -centered
    ```
+
