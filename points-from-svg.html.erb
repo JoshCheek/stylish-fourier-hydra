@@ -1,0 +1,81 @@
+<!doctype html>
+<style>
+  * {
+    padding: 0;
+    margin: 0;
+  }
+  svg {
+    position: absolute;
+    height: 100%;
+  }
+  #cursor {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: red;
+    border-radius: 50%;
+  }
+</style>
+<body>
+
+<div class="container">
+  <%=
+     require 'nokogiri'
+     Nokogiri::XML(File.read(svg))/'svg'
+  %>
+  <div id="cursor">
+  </div>
+</div>
+</body>
+
+<script>
+// The two important methods here are
+// path.getTotalLength and path.getPointAtLength
+// For more info see:
+// https://developer.mozilla.org/en-US/docs/Web/API/SVGPathElement
+
+var path = document.querySelector('path')
+window.p = path
+// Length of path
+var pathLength = Math.floor( path.getTotalLength() );
+
+function getXy(prcnt) {
+  prcnt = (prcnt*pathLength) / 100;
+
+  // Get x and y values at a certain point in the line
+  let pt = path.getPointAtLength(prcnt);
+  return [pt.x, pt.y]
+}
+
+const points = []
+
+let minX =  Infinity
+let maxX = -Infinity
+let minY =  Infinity
+let maxY = -Infinity
+
+for(let i=0, numSamples=<%= num_samples %>; i<numSamples; ++i) {
+  let [x, y] = getXy(i/numSamples*100)
+  points.push([x, y])
+  if(x < minX) minX = x
+  if(x > maxX) maxX = x
+  if(y < minY) minY = y
+  if(y > maxY) maxY = y
+}
+console.log({ minX, maxX, minY, maxY })
+
+{ const text = document.createElement('p')
+  text.innerText = JSON.stringify(points)
+  document.body.appendChild(text)
+}
+
+
+let percent = 0
+requestAnimationFrame(function animate() {
+  const [x, y] = getXy(percent%100)
+  cursor.style.left = x + 'px'
+  cursor.style.top  = y + 'px'
+  percent += 0.1
+  requestAnimationFrame(animate)
+})
+</script>
